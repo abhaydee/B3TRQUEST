@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Connex from "@vechain/connex";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -38,8 +39,56 @@ const Home = () => {
     }
   };
 
+  const [userAddress, setUserAddress] = useState("");
+  const [connected, setConnected] = useState(false);
+  const [importedData, setImportedData] = useState(null);
+
+  // Callback function to receive imported data from Select
+  const handleImportedData = (data) => {
+    console.log("not yet");
+    setImportedData(data);
+    console.log("setImportedData", data);
+  };
+
+  const connectWallet = async () => {
+    console.log("hitting here");
+    let connex = new Connex({
+      node: "https://testnet.veblocks.net/",
+      network: "test",
+    });
+
+    try {
+      const wallet = await connex.vendor
+        .sign("cert", {
+          purpose: "identification",
+          payload: {
+            type: "text",
+            content: "please sign this certificate to log in",
+          },
+        })
+        .request();
+
+      if (wallet && wallet.annex) {
+        console.log("the wallet", wallet);
+        setUserAddress(wallet.annex.signer);
+        setConnected(true);
+      } else {
+        // Handle the case where the wallet object is not as expected
+        console.error("Wallet object is not as expected:", wallet);
+      }
+    } catch (error) {
+      // Handle any errors that occur during the wallet connection process
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("the user address", userAddress);
+  }, [userAddress]);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
+      {!connected && <button onClick={connectWallet}>Connect</button>}
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-4">Select one</h1>
         <div className="space-y-4">
