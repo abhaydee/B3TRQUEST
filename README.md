@@ -15,15 +15,15 @@ B3TR Quest is a gamified, fully on-chain platform that incentivizes users to eng
 Tech Stack
 
 Frontend:
-React
-Vite
+React,
+Vite,
 React Three Fiber
 
 
 Backend:
-Solidity
-Vechain Ecosystem
-Vebetterdao
+Solidity,
+Vechain Ecosystem,
+Vebetterdao,
 Strava Tracking System
 
 ## Steps to run the repo 
