@@ -6,8 +6,8 @@ import Connex from "@vechain/connex";
 const Home = () => {
   const navigate = useNavigate();
 
-  const [userAddress, setUserAddress] = useState("");
-  const [connected, setConnected] = useState(false);
+  const [userAddress, setUserAddress] = useState(localStorage.getItem('userAddress') || "");
+  const [connected, setConnected] = useState(!!localStorage.getItem('userAddress'));
   const [importedData, setImportedData] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('stravaAccessToken'));
   const [activities, setActivities] = useState([]);
@@ -99,6 +99,7 @@ const Home = () => {
       if (wallet && wallet.annex) {
         setUserAddress(wallet.annex.signer);
         setConnected(true);
+        localStorage.setItem('userAddress', wallet.annex.signer);
       } else {
         console.error("Wallet object is not as expected:", wallet);
       }
@@ -137,6 +138,9 @@ const Home = () => {
           const realLng = realLifeCoords.lng.toFixed(1);
 
           if (storedLat === realLat && storedLng === realLng) {
+
+            await rewardUser();
+            alert("Hurray You earned 1 B3TR");
             
             // Check the smart contract here
             const contract = connex.thor.account(contractAddress).method({
@@ -199,9 +203,8 @@ const Home = () => {
       "stateMutability": "nonpayable",
       "type": "function"
     });
-  const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
+    const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
     try {
-      const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
       const tx =  connex.vendor
         .sign('tx', [contract.asClause()])
       const signedTx = await tx.delegate(delegateUrl).request();
@@ -237,16 +240,13 @@ const Home = () => {
   
     // Convert 1 Token to Wei (assuming the token has 18 decimals)
     const amountInWei = '1000000000000000000'; // 1 * 10^18
-  const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
+    const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
     try {
       const tx =  connex.vendor
         .sign('tx', [tokenContract.asClause(userAddress, amountInWei)])
       const signedTx = await tx.delegate(delegateUrl).request();
   
       console.log('Reward transaction submitted:', signedTx);
-
-  
-    
     } catch (error) {
       console.error('Error rewarding user:', error);
     }
