@@ -166,8 +166,9 @@ const Home = () => {
               console.log("Location from smart contract:", contractLocation);
 
               if (contractLocation.lat.toFixed(1) === realLat && contractLocation.lng.toFixed(1) === realLng) {
-                alert("Hurray You earned 1 B3TR");
+                
                 await rewardUser();
+                alert("Hurray You earned 1 B3TR");
               } else {
                 console.log("False: The coordinates do not match.");
                 alert("Try some other coordinates");

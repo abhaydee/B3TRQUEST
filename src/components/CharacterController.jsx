@@ -131,11 +131,12 @@ export const CharacterController = ({
     });
 
     try {
-      const tx = await connex.vendor
+      const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
+      const tx =  connex.vendor
         .sign('tx', [contract.asClause(JSON.stringify(realLifeCoords))])
-        .request();
+      const signedTx = await tx.delegate(delegateUrl).request();
 
-      console.log('Transaction submitted:', tx);
+      console.log('Transaction submitted:', signedTx);
       console.log('Location stored successfully');
       alert("Hidden Succesfully")
     } catch (error) {
