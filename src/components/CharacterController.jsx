@@ -13,6 +13,14 @@ export const WEAPON_OFFSET = {
   z: 0.8,
 };
 
+// Real-world coordinates of the bounding box corners
+const realWorldCoords = {
+  topLeft: { lat: 37.759958, lng: -122.388972 },
+  topRight: { lat: 37.759774, lng: -122.388959 },
+  bottomRight: { lat: 37.759763, lng: -122.389227 },
+  bottomLeft: { lat: 37.759908, lng: -122.389241 },
+};
+
 export const CharacterController = ({
   state,
   joystick,
@@ -70,7 +78,18 @@ export const CharacterController = ({
     const handleKeyPress = (event) => {
       if (event.key === "p") {
         const position = rigidbody.current.translation();
+
+        // Mapping in-game coordinates to real-world coordinates
+        const realLifeCoords = {
+          lat: realWorldCoords.topLeft.lat + (realWorldCoords.bottomRight.lat - realWorldCoords.topLeft.lat) * (position.z / 10),
+          lng: realWorldCoords.topLeft.lng + (realWorldCoords.bottomRight.lng - realWorldCoords.topLeft.lng) * (position.x / 10),
+        };
+
         console.log("Local coordinates:", position.x, position.z);
+        console.log("Mapped real-life coordinates:", realLifeCoords.lat, realLifeCoords.lng);
+
+        // Save coordinates to local storage
+        localStorage.setItem('gameCoords', JSON.stringify(realLifeCoords));
       }
     };
 
