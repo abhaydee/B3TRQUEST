@@ -5,15 +5,17 @@ import Connex from "@vechain/connex";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import Header from './components/Header';
+import LeftSide from './components/LeftSide';
+import RightSide from './components/RightSide';
+
 const Home = () => {
   const navigate = useNavigate();
 
   const [userAddress, setUserAddress] = useState(localStorage.getItem('userAddress') || "");
   const [connected, setConnected] = useState(!!localStorage.getItem('userAddress'));
-  const [importedData, setImportedData] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('stravaAccessToken'));
   const [activities, setActivities] = useState([]);
-  const [position, setPosition] = useState(null);
 
   let connex = new Connex({
     node: "https://testnet.veblocks.net/",
@@ -23,15 +25,15 @@ const Home = () => {
   const contractAddress = "0xFe70A42Fc26a9f659e87134f93465732B360525B"; // Replace with your contract address
   const tokenContractAddress = "0x5479c1e1a6Bfee32ae7bCA1875D49e50083EF18D"; // Replace with your token contract address
 
-  const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=129503&response_type=code&redirect_uri=http://localhost:5173/strava-auth&approval_prompt=auto&scope=read,activity:read`;
+  const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=129475&response_type=code&redirect_uri=http://localhost:5173/strava-auth&approval_prompt=auto&scope=read,activity:read`;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (code && !token) {
       axios.post('https://www.strava.com/oauth/token', {
-        client_id: '129503',
-        client_secret: 'f95b320807fc538033c3a324ae488bbc0c5f3667',
+        client_id: '129475',
+        client_secret: '91ff1c5ce8b8252426a9194e61b371535f4be114',
         code,
         grant_type: 'authorization_code',
         redirect_uri: 'http://localhost:5173/strava-auth'
@@ -258,86 +260,53 @@ const Home = () => {
       toast.error("Error rewarding user. Please try again.");
     }
   };
-  
+
+  const exploreMaps = () => {
+    navigate('/maps');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <ToastContainer />
-      {!connected && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={connectWallet}
-          >
-            Connect Wallet
-          </button>
-        </div>
-      )}
-      {connected && (
-        <>
-          <div className="flex-1 p-6">
-            <h2 className="text-2xl font-bold mb-4">Wallet Address</h2>
-            <p className="bg-gray-800 p-4 rounded-lg break-all">{userAddress}</p>
-          </div>
-          <div className="flex-1 p-6">
-            <h1 className="text-3xl font-bold mb-4">Select one</h1>
-            <div className="space-y-4">
-              <div
-                className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-                onClick={() => handleCardClick('Dog Patch Studios')}
-              >
-                <img src="dog_patch.jpeg" alt="Dog Patch Studios" className="w-24 h-24 rounded-md object-cover" />
-                <span>Dog Patch Studios</span>
-              </div>
-              <div
-                className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-                onClick={() => handleCardClick('Golden State Park')}
-              >
-                <img src="../golden_park.webp" alt="Golden State Park" className="w-24 h-24 rounded-md object-cover" />
-                <span>Golden State Park</span>
-              </div>
-              <div
-                className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-                onClick={() => handleCardClick('Pier 39 SF')}
-              >
-                <img src="pier_39.jpg" alt="Pier 39 SF" className="w-24 h-24 rounded-md object-cover" />
-                <span>Pier 39 SF</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1 flex items-center justify-center p-6">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={handleClaimClick}
-            >
-              Click to claim
-            </button>
-          </div>
-          <div className="flex-1 p-6">
-            <h1 className="text-3xl font-bold mb-4">Strava Activities</h1>
-            {!token && (
-              <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                onClick={handleStravaLogin}
-              >
-                Connect with Strava
-              </button>
-            )}
-            {token && activities.length > 0 && (
-              <ul className="space-y-4">
-                {activities.map((activity) => (
-                  <li key={activity.id} className="bg-gray-800 p-4 rounded-lg">
-                    <h2 className="text-xl font-bold">{activity.name}</h2>
-                    <p>Distance: {activity.distance} meters</p>
-                    <p>Moving Time: {activity.moving_time} seconds</p>
-                    <p>Type: {activity.type}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </>
-      )}
+      <Header 
+        connectWallet={connectWallet} 
+        handleStravaLogin={handleStravaLogin} 
+        connected={connected} 
+      />
+      <div className="flex flex-col md:flex-row">
+        {connected && (
+          <>
+            <LeftSide handleCardClick={handleCardClick} />
+            <RightSide 
+              handleClaimClick={handleClaimClick} 
+              exploreMaps={exploreMaps} 
+            />
+            {/* <div className="flex-1 p-6">
+              <h1 className="text-3xl font-bold mb-4">Strava Activities</h1>
+              {!token && (
+                <button
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={handleStravaLogin}
+                >
+                  Login with Strava
+                </button>
+              )}
+              {token && activities.length > 0 && (
+                <ul className="space-y-4">
+                  {activities.map((activity) => (
+                    <li key={activity.id} className="bg-gray-800 p-4 rounded-lg">
+                      <h2 className="text-xl font-bold">{activity.name}</h2>
+                      <p>Distance: {activity.distance} meters</p>
+                      <p>Moving Time: {activity.moving_time} seconds</p>
+                      <p>Type: {activity.type}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div> */}
+          </>
+        )}
+      </div>
     </div>
   );
 };

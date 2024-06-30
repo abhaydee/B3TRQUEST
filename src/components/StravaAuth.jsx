@@ -21,8 +21,8 @@ const StravaAuth = ({ setToken }) => {
   useEffect(() => {
     if (authCode) {
       axios.post('https://www.strava.com/oauth/token', {
-        client_id: '129503',
-        client_secret: 'f95b320807fc538033c3a324ae488bbc0c5f3667',
+        client_id: '129475',
+        client_: '91ff1c5ce8b8252426a9194e61b371535f4be114',
         code: authCode,
         grant_type: 'authorization_code',
         redirect_uri: 'http://localhost:5173/strava-auth'
