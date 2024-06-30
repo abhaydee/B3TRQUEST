@@ -158,7 +158,7 @@ export const CharacterController = ({
 
       console.log('Transaction submitted:', signedTx);
       console.log('Location stored successfully');
-      alert("Hidden Succesfully")
+      toast.success("Hidden Succesfully")
     } catch (error) {
       console.error('Error storing location:', error);
     }

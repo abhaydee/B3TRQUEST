@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Connex from "@vechain/connex";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -100,11 +102,13 @@ const Home = () => {
         setUserAddress(wallet.annex.signer);
         setConnected(true);
         localStorage.setItem('userAddress', wallet.annex.signer);
+        toast.success("Wallet connected successfully!");
       } else {
         console.error("Wallet object is not as expected:", wallet);
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
+      toast.error("Error connecting wallet. Please try again.");
     }
   };
 
@@ -117,7 +121,7 @@ const Home = () => {
       await createRoomTransaction();
       navigate('/play');
     } else {
-      alert('Coming soon');
+      toast.info("Coming soon");
     }
   };
 
@@ -132,15 +136,15 @@ const Home = () => {
 
         const storedCoords = JSON.parse(localStorage.getItem('gameCoords'));
         if (storedCoords) {
-          const storedLat = storedCoords.lat.toFixed(1);
-          const storedLng = storedCoords.lng.toFixed(1);
-          const realLat = realLifeCoords.lat.toFixed(1);
-          const realLng = realLifeCoords.lng.toFixed(1);
+          const storedLat = storedCoords.lat.toFixed(2);
+          const storedLng = storedCoords.lng.toFixed(2);
+          const realLat = realLifeCoords.lat.toFixed(2);
+          const realLng = realLifeCoords.lng.toFixed(2);
 
           if (storedLat === realLat && storedLng === realLng) {
 
             await rewardUser();
-            alert("Hurray You earned 1 B3TR");
+            toast.success("Hurray You earned 1 B3TR");
             
             // Check the smart contract here
             const contract = connex.thor.account(contractAddress).method({
@@ -169,20 +173,20 @@ const Home = () => {
               const contractLocation = JSON.parse(result.decoded[0]);
               console.log("Location from smart contract:", contractLocation);
 
-              if (contractLocation.lat.toFixed(1) === realLat && contractLocation.lng.toFixed(1) === realLng) {
+              if (contractLocation.lat.toFixed(2) === realLat && contractLocation.lng.toFixed(2) === realLng) {
                 
                 await rewardUser();
-                alert("Hurray You earned 1 B3TR");
+                toast.success("Hurray You earned 1 B3TR");
               } else {
                 console.log("False: The coordinates do not match.");
-                alert("Try some other coordinates");
+                toast.error("Try some other coordinates");
               }
             } catch (error) {
               console.error('Error fetching location from contract:', error);
             }
           } else {
             console.log("False: The coordinates do not match.");
-            alert("Try some other coordinates");
+            toast.error("Try some other coordinates");
           }
         } else {
           console.log("No game coordinates found in local storage.");
@@ -213,6 +217,7 @@ const Home = () => {
       console.log('Room created successfully');
     } catch (error) {
       console.error('Error creating room:', error);
+      toast.error("Error creating room. Please try again.");
     }
   };
 
@@ -247,14 +252,17 @@ const Home = () => {
       const signedTx = await tx.delegate(delegateUrl).request();
   
       console.log('Reward transaction submitted:', signedTx);
+      toast.success(`Reward transaction submitted. Tx Hash: ${signedTx.txid}`);
     } catch (error) {
       console.error('Error rewarding user:', error);
+      toast.error("Error rewarding user. Please try again.");
     }
   };
   
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
+      <ToastContainer />
       {!connected && (
         <div className="flex-1 flex items-center justify-center p-6">
           <button
