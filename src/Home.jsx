@@ -5,8 +5,12 @@ import Connex from "@vechain/connex";
 const Home = () => {
   const navigate = useNavigate();
 
-  const handleCardClick = () => {
-    navigate('/play');
+  const handleCardClick = (cardName) => {
+    if (cardName === 'Dog Patch Studios') {
+      navigate('/play');
+    } else {
+      alert('Coming soon');
+    }
   };
 
   const handleClaimClick = () => {
@@ -20,10 +24,10 @@ const Home = () => {
 
         const storedCoords = JSON.parse(localStorage.getItem('gameCoords'));
         if (storedCoords) {
-          const storedLat = storedCoords.lat.toFixed(6);
-          const storedLng = storedCoords.lng.toFixed(6);
-          const realLat = realLifeCoords.lat.toFixed(6);
-          const realLng = realLifeCoords.lng.toFixed(6);
+          const storedLat = storedCoords.lat.toFixed(3);
+          const storedLng = storedCoords.lng.toFixed(3);
+          const realLat = realLifeCoords.lat.toFixed(3);
+          const realLng = realLifeCoords.lng.toFixed(3);
 
           if (storedLat === realLat && storedLng === realLng) {
             console.log("True: The coordinates match.");
@@ -43,7 +47,6 @@ const Home = () => {
   const [connected, setConnected] = useState(false);
   const [importedData, setImportedData] = useState(null);
 
-  // Callback function to receive imported data from Select
   const handleImportedData = (data) => {
     console.log("not yet");
     setImportedData(data);
@@ -73,11 +76,9 @@ const Home = () => {
         setUserAddress(wallet.annex.signer);
         setConnected(true);
       } else {
-        // Handle the case where the wallet object is not as expected
         console.error("Wallet object is not as expected:", wallet);
       }
     } catch (error) {
-      // Handle any errors that occur during the wallet connection process
       console.error("Error connecting wallet:", error);
     }
   };
@@ -88,27 +89,43 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
-      {!connected && <button onClick={connectWallet}>Connect</button>}
+      {!connected && (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={connectWallet}
+          >
+            Connect Wallet
+          </button>
+        </div>
+      )}
+      {connected && (
+        <>
+        <div className="flex-1 p-6">
+          <h2 className="text-2xl font-bold mb-4">Wallet Address</h2>
+          <p className="bg-gray-800 p-4 rounded-lg break-all">{userAddress}</p>
+        </div>
+      
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-4">Select one</h1>
         <div className="space-y-4">
           <div
             className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-            onClick={handleCardClick}
+            onClick={() => handleCardClick('Dog Patch Studios')}
           >
             <img src="dog_patch.jpeg" alt="Dog Patch Studios" className="w-24 h-24 rounded-md object-cover" />
             <span>Dog Patch Studios</span>
           </div>
           <div
             className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-            onClick={handleCardClick}
+            onClick={() => handleCardClick('Golden State Park')}
           >
             <img src="../golden_park.webp" alt="Golden State Park" className="w-24 h-24 rounded-md object-cover" />
             <span>Golden State Park</span>
           </div>
           <div
             className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4 w-full md:w-96 cursor-pointer"
-            onClick={handleCardClick}
+            onClick={() => handleCardClick('Pier 39 SF')}
           >
             <img src="pier_39.jpg" alt="Pier 39 SF" className="w-24 h-24 rounded-md object-cover" />
             <span>Pier 39 SF</span>
@@ -123,6 +140,9 @@ const Home = () => {
           Click to claim
         </button>
       </div>
+        </>
+        
+      )}
     </div>
   );
 };
