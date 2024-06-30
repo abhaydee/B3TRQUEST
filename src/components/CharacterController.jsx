@@ -1,6 +1,7 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
+import { useNavigate } from 'react-router-dom';
 import { isHost } from "playroomkit";
 import { useEffect, useRef, useState } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
@@ -35,6 +36,9 @@ export const CharacterController = ({
     node: "https://testnet.veblocks.net/",
     network: "test",
   });
+
+
+  const navigate = useNavigate();
 
   const locationContractAddress = "0xf9130842A2b802b287caE21ABa941ac7003202c3"; // Replace with your contract address
 
@@ -103,6 +107,22 @@ export const CharacterController = ({
 
         // Save coordinates to local storage
         localStorage.setItem('gameCoords', JSON.stringify(realLifeCoords));
+      }
+    };
+
+    window.addEventListener("keypress", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keypress", handleKeyPress);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === "m") {
+        
+        navigate('/');
+        
       }
     };
 
