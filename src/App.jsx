@@ -11,6 +11,7 @@ function App() {
         
         <Routes>
           <Route path="/" element={<Home/>} />
+          <Route path="/strava-auth" element={<Home />} />
 
           <Route path="/play" element={<PlayMe />} />
           

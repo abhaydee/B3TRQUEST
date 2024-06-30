@@ -18,6 +18,7 @@
     "@vechain/hardhat-ethers": "^0.1.9",
     "@vechain/sdk-rpc-proxy": "^1.0.0-beta.18",
     "@vechain/web3-providers-connex": "^1.1.2",
+    "axios": "^1.7.2",
     "leva": "^0.9.35",
     "playroomkit": "^0.0.36",
     "react": "^18.2.0",

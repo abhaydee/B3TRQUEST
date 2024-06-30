@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Connex from "@vechain/connex";
 
 const Home = () => {
@@ -8,23 +9,77 @@ const Home = () => {
   const [userAddress, setUserAddress] = useState("");
   const [connected, setConnected] = useState(false);
   const [importedData, setImportedData] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('stravaAccessToken'));
+  const [activities, setActivities] = useState([]);
+  const [position, setPosition] = useState(null);
 
   let connex = new Connex({
     node: "https://testnet.veblocks.net/",
     network: "test",
   });
 
-  const contractAddress = "0xf9130842A2b802b287caE21ABa941ac7003202c3"; // Replace with your contract address
+  const contractAddress = "0xFe70A42Fc26a9f659e87134f93465732B360525B"; // Replace with your contract address
   const tokenContractAddress = "0x5479c1e1a6Bfee32ae7bCA1875D49e50083EF18D"; // Replace with your token contract address
 
-  const handleImportedData = (data) => {
-    console.log("not yet");
-    setImportedData(data);
-    console.log("setImportedData", data);
+  const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=129503&response_type=code&redirect_uri=http://localhost:5173/strava-auth&approval_prompt=auto&scope=read,activity:read`;
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code && !token) {
+      axios.post('https://www.strava.com/oauth/token', {
+        client_id: '129503',
+        client_secret: 'f95b320807fc538033c3a324ae488bbc0c5f3667',
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://localhost:5173/strava-auth'
+      }).then(response => {
+        setToken(response.data.access_token);
+        localStorage.setItem('stravaAccessToken', response.data.access_token);
+        localStorage.setItem('stravaRefreshToken', response.data.refresh_token);
+      }).catch(error => {
+        console.error('Error fetching access token:', error);
+      });
+    } else {
+      const storedToken = localStorage.getItem('stravaAccessToken');
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const fetchActivities = () => {
+      if (token) {
+        axios.get('https://www.strava.com/api/v3/athlete/activities', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }).then(response => {
+          setActivities(response.data);
+          response.data.forEach(activity => {
+            console.log('Activity:', activity.name);
+            console.log('Distance:', activity.distance, 'meters');
+            console.log('Moving Time:', activity.moving_time, 'seconds');
+            console.log('Start Date:', activity.start_date);
+            console.log('Type:', activity.type);
+          });
+        }).catch(error => {
+          console.error('Error fetching activities:', error);
+        });
+      }
+    };
+
+    // Fetch activities every 30 seconds
+    const interval = setInterval(fetchActivities, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
+
+  const handleStravaLogin = () => {
+    window.location.href = stravaAuthUrl;
   };
 
   const connectWallet = async () => {
-    console.log("hitting here");
     let connex = new Connex({
       node: "https://testnet.veblocks.net/",
       network: "test",
@@ -42,7 +97,6 @@ const Home = () => {
         .request();
 
       if (wallet && wallet.annex) {
-        console.log("the wallet", wallet);
         setUserAddress(wallet.annex.signer);
         setConnected(true);
       } else {
@@ -249,6 +303,29 @@ const Home = () => {
             >
               Click to claim
             </button>
+          </div>
+          <div className="flex-1 p-6">
+            <h1 className="text-3xl font-bold mb-4">Strava Activities</h1>
+            {!token && (
+              <button
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleStravaLogin}
+              >
+                Connect with Strava
+              </button>
+            )}
+            {token && activities.length > 0 && (
+              <ul className="space-y-4">
+                {activities.map((activity) => (
+                  <li key={activity.id} className="bg-gray-800 p-4 rounded-lg">
+                    <h2 className="text-xl font-bold">{activity.name}</h2>
+                    <p>Distance: {activity.distance} meters</p>
+                    <p>Moving Time: {activity.moving_time} seconds</p>
+                    <p>Type: {activity.type}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </>
       )}
