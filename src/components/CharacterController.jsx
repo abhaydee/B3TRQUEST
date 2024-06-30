@@ -4,6 +4,7 @@ import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
 import { useEffect, useRef, useState } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
+import Connex from "@vechain/connex";
 
 const MOVEMENT_SPEED = 202;
 const FIRE_RATE = 380;
@@ -30,6 +31,13 @@ export const CharacterController = ({
   downgradedPerformance,
   ...props
 }) => {
+  let connex = new Connex({
+    node: "https://testnet.veblocks.net/",
+    network: "test",
+  });
+
+  const locationContractAddress = "0xf9130842A2b802b287caE21ABa941ac7003202c3"; // Replace with your contract address
+
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -88,6 +96,11 @@ export const CharacterController = ({
         console.log("Local coordinates:", position.x, position.z);
         console.log("Mapped real-life coordinates:", realLifeCoords.lat, realLifeCoords.lng);
 
+        // Store location on-chain
+        storeLocationOnChain(realLifeCoords);
+
+        
+
         // Save coordinates to local storage
         localStorage.setItem('gameCoords', JSON.stringify(realLifeCoords));
       }
@@ -99,6 +112,36 @@ export const CharacterController = ({
       window.removeEventListener("keypress", handleKeyPress);
     };
   }, []);
+
+  const storeLocationOnChain = async (realLifeCoords) => {
+    const contract = connex.thor.account(locationContractAddress).method({
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_location",
+          "type": "string"
+        }
+      ],
+      "name": "setLocation",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    });
+
+    try {
+      const tx = await connex.vendor
+        .sign('tx', [contract.asClause(JSON.stringify(realLifeCoords))])
+        .request();
+
+      console.log('Transaction submitted:', tx);
+      console.log('Location stored successfully');
+      alert("Hidden Succesfully")
+    } catch (error) {
+      console.error('Error storing location:', error);
+    }
+  };
 
   useFrame((_, delta) => {
     // CAMERA FOLLOW

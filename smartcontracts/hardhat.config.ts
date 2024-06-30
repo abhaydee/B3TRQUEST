@@ -6,13 +6,13 @@ import '@vechain/hardhat-vechain'
 import '@vechain/hardhat-ethers'
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.18",  
+  solidity: "0.8.20",  
 };
 
 
 module.exports = {
   solidity: {
-      version: "0.8.18",
+      version: "0.8.20",
   },
   mocha: {
     timeout: 180000,

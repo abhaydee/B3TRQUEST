@@ -14,7 +14,8 @@ const Home = () => {
     network: "test",
   });
 
-  const contractAddress = "0xFe70A42Fc26a9f659e87134f93465732B360525B"; // Replace with your contract address
+  const contractAddress = "0xf9130842A2b802b287caE21ABa941ac7003202c3"; // Replace with your contract address
+  const tokenContractAddress = "0x5479c1e1a6Bfee32ae7bCA1875D49e50083EF18D"; // Replace with your token contract address
 
   const handleImportedData = (data) => {
     console.log("not yet");
@@ -67,7 +68,7 @@ const Home = () => {
 
   const handleClaimClick = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
+      navigator.geolocation.getCurrentPosition(async (position) => {
         const realLifeCoords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -76,15 +77,53 @@ const Home = () => {
 
         const storedCoords = JSON.parse(localStorage.getItem('gameCoords'));
         if (storedCoords) {
-          const storedLat = storedCoords.lat.toFixed(6);
-          const storedLng = storedCoords.lng.toFixed(6);
-          const realLat = realLifeCoords.lat.toFixed(6);
-          const realLng = realLifeCoords.lng.toFixed(6);
+          const storedLat = storedCoords.lat.toFixed(1);
+          const storedLng = storedCoords.lng.toFixed(1);
+          const realLat = realLifeCoords.lat.toFixed(1);
+          const realLng = realLifeCoords.lng.toFixed(1);
 
           if (storedLat === realLat && storedLng === realLng) {
-            console.log("True: The coordinates match.");
+            
+            // Check the smart contract here
+            const contract = connex.thor.account(contractAddress).method({
+              "constant": true,
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_user",
+                  "type": "address"
+                }
+              ],
+              "name": "getLocation",
+              "outputs": [
+                {
+                  "internalType": "string",
+                  "name": "",
+                  "type": "string"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            });
+
+            try {
+              const result = await contract.call(userAddress);
+              const contractLocation = JSON.parse(result.decoded[0]);
+              console.log("Location from smart contract:", contractLocation);
+
+              if (contractLocation.lat.toFixed(1) === realLat && contractLocation.lng.toFixed(1) === realLng) {
+                alert("Hurray You earned 1 B3TR");
+                await rewardUser();
+              } else {
+                console.log("False: The coordinates do not match.");
+                alert("Try some other coordinates");
+              }
+            } catch (error) {
+              console.error('Error fetching location from contract:', error);
+            }
           } else {
             console.log("False: The coordinates do not match.");
+            alert("Try some other coordinates");
           }
         } else {
           console.log("No game coordinates found in local storage.");
@@ -105,18 +144,59 @@ const Home = () => {
       "stateMutability": "nonpayable",
       "type": "function"
     });
-
+  const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
     try {
-      const tx = await connex.vendor
+      const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
+      const tx =  connex.vendor
         .sign('tx', [contract.asClause()])
-        .request();
+      const signedTx = await tx.delegate(delegateUrl).request();
 
-      console.log('Transaction submitted:', tx);
+      console.log('Transaction submitted:', signedTx);
       console.log('Room created successfully');
     } catch (error) {
       console.error('Error creating room:', error);
     }
   };
+
+  const rewardUser = async () => {
+    const tokenContract = connex.thor.account(tokenContractAddress).method({
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "mint",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    });
+  
+    // Convert 1 Token to Wei (assuming the token has 18 decimals)
+    const amountInWei = '1000000000000000000'; // 1 * 10^18
+  const delegateUrl = 'https://sponsor-testnet.vechain.energy/by/280'
+    try {
+      const tx =  connex.vendor
+        .sign('tx', [tokenContract.asClause(userAddress, amountInWei)])
+      const signedTx = await tx.delegate(delegateUrl).request();
+  
+      console.log('Reward transaction submitted:', signedTx);
+
+  
+    
+    } catch (error) {
+      console.error('Error rewarding user:', error);
+    }
+  };
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
