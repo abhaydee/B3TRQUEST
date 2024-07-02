@@ -1,5 +1,7 @@
 ### B3TR Quest
 
+ ![GRV2pPXawAAlix9](https://github.com/abhaydee/B3TRQUEST/assets/20876434/18091ab7-5d1b-457d-8d57-8fd25182483f)
+
 ## Short Description
 B3TR Quest is a gamified, fully on-chain platform that incentivizes users to engage in physical activities by rewarding them with B3TR tokens. The app combines the thrill of treasure hunts with real-world gamification, offering a unique and engaging experience for users to earn rewards by walking, running, and solving puzzles.
 
